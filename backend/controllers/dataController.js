@@ -20,6 +20,7 @@ const upload = multer({
     }
 }).single('file'); // Use 'file' as the field name for the upload
 
+// Upload data and process CSV file
 exports.uploadData = async (req, res) => {
     upload(req, res, async (err) => {
         if (err) {
@@ -34,7 +35,7 @@ exports.uploadData = async (req, res) => {
 
         try {
             const records = [];
-            
+
             fs.createReadStream(req.file.path)
                 .pipe(csvParser())
                 .on('data', (row) => {
@@ -47,6 +48,7 @@ exports.uploadData = async (req, res) => {
                         Close: row.Close ? parseFloat(row.Close) : 0,
                         Volume: row.Volume ? parseInt(row.Volume, 10) : 0,
                         OpenInt: row.OpenInt ? parseInt(row.OpenInt, 10) : 0,
+                        userId: req.userId // Associate record with the logged-in user
                     };
 
                     // Capture additional dynamic fields
@@ -56,7 +58,7 @@ exports.uploadData = async (req, res) => {
                             additionalFields[key] = row[key];
                         }
                     });
-                    
+
                     // Add additional fields if any exist
                     if (Object.keys(additionalFields).length > 0) {
                         record.additionalFields = additionalFields;
@@ -92,9 +94,13 @@ exports.uploadData = async (req, res) => {
     });
 };
 
+// Fetch data for the logged-in user
 exports.getData = async (req, res) => {
     try {
-        const records = await DataRecord.find().limit(100); // Adjust as needed
+        const records = await DataRecord.find({ userId: req.userId }) // Filter records by userId
+            .limit(100) // Adjust as needed
+            .exec(); // Ensure we execute the query
+
         console.log("Retrieved records:", records); // Log retrieved records for verification
         res.json(records);
     } catch (error) {
