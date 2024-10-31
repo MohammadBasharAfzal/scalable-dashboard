@@ -1,39 +1,38 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/router';
+// frontend/pages/register.js
 import styles from '../styles/styles.module.css';
+import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import axios from 'axios';
 
-const Login = () => {
+const Register = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const router = useRouter();
 
-    const handleLogin = async (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', {
+            await axios.post('http://localhost:5000/api/auth/register', {
                 username,
                 password,
             });
-            localStorage.setItem('token', response.data.token);
-            router.push('/dashboard'); // Redirect to dashboard
+            router.push('/login'); // Redirect to login
         } catch (err) {
-            setError('Invalid username or password.');
+            setError('Registration failed. Please try again.');
         }
     };
 
     return (
-        <div className={styles.container}>
-            <h2>Login</h2>
-            {error && <div className={styles.error}>{error}</div>}
-            <form onSubmit={handleLogin}>
+        <div className="register-container">
+            <h1>Register</h1>
+            {error && <p className="error">{error}</p>}
+            <form onSubmit={handleRegister}>
                 <input
                     type="text"
                     placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className={styles.inputField}
                     required
                 />
                 <input
@@ -41,13 +40,12 @@ const Login = () => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={styles.inputField}
                     required
                 />
-                <button type="submit" className={styles.button}>Login</button>
+                <button type="submit">Register</button>
             </form>
         </div>
     );
 };
 
-export default Login;
+export default Register;
